@@ -11,19 +11,33 @@ public class OpenDoor : MonoBehaviour {
     GameObject doorOne;
 
     [SerializeField]
+    Vector3 openLocation1;//the localSpace Vector that the door will open to
+
+    [SerializeField]
     GameObject doorTwo;
+
+    [SerializeField]
+    Vector3 openLocation2;
 
     [SerializeField]
     GameObject doorThree;
 
     [SerializeField]
+    Vector3 openLocation3;
+
+    [SerializeField]
     GameObject doorFour;
 
     [SerializeField]
-    SphereCollider opener;
+    Vector3 openLocation4;
 
     [SerializeField]
-    SphereCollider closer;
+    AudioClip openSound;
+
+    [SerializeField]
+    AudioClip closeSound;
+
+    private AudioSource soundOutput;
 
     private Vector3 doorOneRestingLocation;
 
@@ -38,11 +52,7 @@ public class OpenDoor : MonoBehaviour {
     private bool doorThreeActive = false;
     private bool doorFourActive = false;
 
-    public bool closed = false;
-
     private bool stopOtherDoors;
-
-    private bool test = true;
 
     private string playerString = "Player";
 
@@ -73,6 +83,17 @@ public class OpenDoor : MonoBehaviour {
         }
 
 
+        try//setup audio source
+        {
+            soundOutput = this.GetComponent<AudioSource>();
+        }
+        catch(System.Exception e)
+        {
+            Debug.Log(e);
+        }
+        
+
+
 
 
     }
@@ -83,8 +104,23 @@ public class OpenDoor : MonoBehaviour {
         if (other.gameObject.CompareTag(playerString))
         {
             Debug.Log("player hit");
-            StartCoroutine(lerpOpen(doorOne, doorOneRestingLocation, doorOne.transform.position + new Vector3(1.5f, 0, 0), doorSpeed));
-            StartCoroutine(lerpOpen(doorTwo, doorTwoRestingLocation, doorTwo.transform.position + new Vector3(-1.5f, 0, 0), doorSpeed));
+            if (doorOneActive)
+            {
+                StartCoroutine(lerpOpen(doorOne, doorOneRestingLocation, doorOne.transform.position + openLocation1, doorSpeed));//1.5f
+                soundOutput.PlayOneShot(openSound);
+            }
+            if (doorTwoActive)
+            {
+                StartCoroutine(lerpOpen(doorTwo, doorTwoRestingLocation, doorTwo.transform.position + openLocation2, doorSpeed));//-1.5f
+            }
+            if (doorThreeActive)
+            {
+                StartCoroutine(lerpOpen(doorThree, doorThreeRestingLocation, doorThree.transform.position + openLocation3, doorSpeed));//-1.5f
+            }
+            if (doorFourActive)
+            {
+                StartCoroutine(lerpOpen(doorFour, doorFourRestingLocation, doorFour.transform.position + openLocation4, doorSpeed));//-1.5f
+            }
         }
     }
 
@@ -93,8 +129,23 @@ public class OpenDoor : MonoBehaviour {
         if (other.gameObject.CompareTag(playerString))
         {
             Debug.Log("player hit");
-            StartCoroutine(lerpClose(doorOne, doorOneRestingLocation, doorOne.transform.position + new Vector3(1.5f, 0, 0), doorSpeed));
-            StartCoroutine(lerpClose(doorTwo, doorTwoRestingLocation, doorTwo.transform.position + new Vector3(-1.5f, 0, 0), doorSpeed));
+            if (doorOneActive)
+            {
+                StartCoroutine(lerpClose(doorOne, doorOneRestingLocation, doorOne.transform.position + openLocation1, doorSpeed));//1.5f
+                soundOutput.PlayOneShot(closeSound);
+            }
+            if (doorTwoActive)
+            {
+                StartCoroutine(lerpClose(doorTwo, doorTwoRestingLocation, doorTwo.transform.position + openLocation2, doorSpeed));//-1.5f
+            }
+            if (doorThreeActive)
+            {
+                StartCoroutine(lerpClose(doorThree, doorThreeRestingLocation, doorThree.transform.position + openLocation3, doorSpeed));//-1.5f
+            }
+            if (doorFourActive)
+            {
+                StartCoroutine(lerpClose(doorFour, doorFourRestingLocation, doorFour.transform.position + openLocation4, doorSpeed));//-1.5f
+            }
         }
     }
 
@@ -151,6 +202,7 @@ public class OpenDoor : MonoBehaviour {
             elapsedTime += Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
+        doorPart.transform.position = restingPlace;
     }
 
 }
