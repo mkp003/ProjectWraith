@@ -18,6 +18,13 @@ public class ArmController : MonoBehaviour {
     [SerializeField]
     private GameObject armDisplay;
 
+    // Is this script on the left or right hand?
+    [SerializeField]
+    private bool isLeft = true;
+
+    [SerializeField]
+    private GameObject flashlight;
+
     // Is the arm display active?
     private bool isArmDisplayActive = false;
 
@@ -53,7 +60,11 @@ public class ArmController : MonoBehaviour {
                 DeactiveateArmGUI();
             }
         }
-	}
+        if (Input.GetButtonDown("light"))
+        {
+            Debug.Log(Input.mousePosition);
+        }
+    }
 
 
     /// <summary>
@@ -64,13 +75,28 @@ public class ArmController : MonoBehaviour {
     {
         float rotationZ = handReference.transform.rotation.eulerAngles.z;
         float rotationY = handReference.transform.rotation.eulerAngles.y;
-        if (rotationZ > 80.0f && rotationZ < 100)
+        if (!isLeft)
         {
-            return true;
+            if (rotationZ > 80.0f && rotationZ < 100f)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else
         {
-            return false;
+            Debug.Log(rotationZ);
+            if (rotationZ < 280.0f && rotationZ > 260.0f)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 
@@ -81,14 +107,29 @@ public class ArmController : MonoBehaviour {
     /// <returns>True if can be deactivated, false otherwise</returns>
     private bool CheckToDeactivate()
     {
-        float rotation = handReference.transform.rotation.eulerAngles.z;
-        if (rotation < 50.0f)
+        if (!isLeft)
         {
-            return true;
+            float rotation = handReference.transform.rotation.eulerAngles.z;
+            if (rotation < 50.0f)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else
         {
-            return false;
+            float rotation = handReference.transform.rotation.eulerAngles.z;
+            if (rotation > 310.0f)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 
@@ -110,6 +151,11 @@ public class ArmController : MonoBehaviour {
     {
         armDisplay.SetActive(false);
         isArmDisplayActive = false;
+    }
+
+    private void BatteryOn()
+    {
+        
     }
 
 
