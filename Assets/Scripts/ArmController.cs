@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -18,15 +19,22 @@ public class ArmController : MonoBehaviour {
     [SerializeField]
     private GameObject armDisplay;
 
+    // Is the arm display active?
+    private bool isArmDisplayActive = false;
+
     // Is this script on the left or right hand?
     [SerializeField]
     private bool isLeft = true;
 
+    // Flashlight object reference
     [SerializeField]
     private GameObject flashlight;
 
-    // Is the arm display active?
-    private bool isArmDisplayActive = false;
+    // Is the flashlight on?
+    private bool isFlashlightOn = false;
+
+    // Coroutine which runs the flashlight
+    private IEnumerator runFlashlight;
 
     // Current battery level (%)
     private float batteryLevel = 100.0f;
@@ -41,6 +49,7 @@ public class ArmController : MonoBehaviour {
 
     // Current reading of how close the main monster is
     private float geigerCounterRate;
+
 
 
     // Update is called once per frame
@@ -60,10 +69,23 @@ public class ArmController : MonoBehaviour {
                 DeactiveateArmGUI();
             }
         }
-        if (Input.GetButtonDown("light"))
+        // Check for flashlight input based on arm
+        if (isLeft)
         {
-            Debug.Log(Input.mousePosition);
+            if (Input.GetButtonDown("Oculus_CrossPlatform_Button4"))
+            {
+                FlashlightInput();
+            }
         }
+        else
+        {
+            if (Input.GetButtonDown("Oculus_CrossPlatform_Button2"))
+            {
+                FlashlightInput();
+            }
+        }
+
+
     }
 
 
@@ -88,7 +110,6 @@ public class ArmController : MonoBehaviour {
         }
         else
         {
-            Debug.Log(rotationZ);
             if (rotationZ < 280.0f && rotationZ > 260.0f)
             {
                 return true;
@@ -153,29 +174,65 @@ public class ArmController : MonoBehaviour {
         isArmDisplayActive = false;
     }
 
-    private void BatteryOn()
-    {
-        
-    }
-
 
     /// <summary>
-    /// BatteryUsage() is called whenever a portion of the battery's power has been used.
+    /// FlashlightInput() will either turn on or turn off the flashlight based on 
+    /// the current state of the flashlight.
     /// </summary>
-    private void BatteryUsage()
+    private void FlashlightInput()
     {
-        if (!(batteryLevel <= 0))
+        if (isFlashlightOn)
         {
-            if (batteryLevel > batteryDepletionRate)
+            StopCoroutine(runFlashlight);
+            isFlashlightOn = false;
+            flashlight.SetActive(false);
+        }
+        else
+        {
+            if (batteryLevel > 0)
             {
-                batteryLevel = batteryLevel - batteryDepletionRate;
+                isFlashlightOn = true;
+                flashlight.SetActive(true);
+                runFlashlight = BatteryUsage();
+                StartCoroutine(runFlashlight);
             }
             else
             {
-                batteryLevel = 0;
+                // UI display of failed attempt to turn on flashlight might be cool
             }
-            UpdateBatteryDisplay();
         }
+    }
+
+
+
+    /// <summary>
+    /// BatteryUsage() running while the battery is on and simulates the usage of the battery 
+    /// while updating the arm display as the power is drained.
+    /// </summary>
+    IEnumerator BatteryUsage()
+    {
+        flashlight.SetActive(true);
+        float elapsedtime = 0;
+        while (isFlashlightOn)
+        {
+            if(elapsedtime > batteryDepletionRate) {
+                if (batteryLevel > 0)
+                {
+                    batteryLevel = batteryLevel - 1;
+                }
+                else
+                {
+                    batteryLevel = 0;
+                    isFlashlightOn = false;
+                    flashlight.SetActive(false);
+                }
+                UpdateBatteryDisplay();
+                elapsedtime = 0;
+            }
+            elapsedtime = elapsedtime + Time.deltaTime;
+            yield return null;
+        }
+        yield return null;
     }
 
 
@@ -183,7 +240,7 @@ public class ArmController : MonoBehaviour {
     /// NewBatteryAdded() is called when the user adds a new battery to their arm.
     /// This increases the battery level to 100%
     /// </summary>
-    private void NewBatteryAdded()
+    public void NewBatteryAdded()
     {
         batteryLevel = 100.0f;
         UpdateBatteryDisplay();
@@ -195,7 +252,7 @@ public class ArmController : MonoBehaviour {
     /// </summary>
     private void UpdateBatteryDisplay()
     {
-        batteryDisplay.GetComponent<TextMesh>().text = "Battery Level: " + batteryLevel + "%";
+        batteryDisplay.GetComponent<TextMeshProUGUI>().text = "Battery Level: " + batteryLevel + "%";
     }
 
 

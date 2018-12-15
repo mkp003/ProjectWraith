@@ -45,6 +45,23 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1385174160427686
+GameObject:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4632118311691770}
+  - component: {fileID: 136516593202833404}
+  - component: {fileID: 114094264566554278}
+  m_Layer: 0
+  m_Name: BatterySlotLeft
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1441890963065418
 GameObject:
   m_ObjectHideFlags: 1
@@ -100,7 +117,7 @@ GameObject:
   m_IsActive: 1
 --- !u!1 &1933345993616882
 GameObject:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 6
@@ -108,23 +125,23 @@ GameObject:
   - component: {fileID: 4082136944828450}
   - component: {fileID: 108822251487952102}
   m_Layer: 0
-  m_Name: Flashlight
+  m_Name: FlashlightLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4082136944828450
 Transform:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1933345993616882}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.09099996, y: -0.027999997, z: -0.08799994}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -0.5099997, y: 1.0199995, z: -0.020000167}
+  m_LocalScale: {x: 10, y: 10, z: 10}
   m_Children: []
-  m_Father: {fileID: 4163383757861056}
+  m_Father: {fileID: 4800554876889898}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4163383757861056
@@ -137,10 +154,22 @@ Transform:
   m_LocalPosition: {x: -1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 4082136944828450}
   - {fileID: 4800554876889898}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4632118311691770
+Transform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1385174160427686}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.47100034, y: 0.88599885, z: -0.002000702}
+  m_LocalScale: {x: 0.10000001, y: 0.09999996, z: 0.09999996}
+  m_Children: []
+  m_Father: {fileID: 4800554876889898}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4800554876889898
 Transform:
@@ -152,9 +181,11 @@ Transform:
   m_LocalPosition: {x: -0.04, y: -0.03, z: -0.19}
   m_LocalScale: {x: 0.099999994, y: 0.10000011, z: 0.10000011}
   m_Children:
+  - {fileID: 4082136944828450}
+  - {fileID: 4632118311691770}
   - {fileID: 224422005220669042}
   m_Father: {fileID: 4163383757861056}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!23 &23267021234034984
 MeshRenderer:
@@ -235,6 +266,18 @@ Light:
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!114 &114094264566554278
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1385174160427686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 778d35ccfa9219a41a9c9be2967b9815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  armController: {fileID: 1485522990855460}
 --- !u!114 &114127500165135916
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -437,8 +480,9 @@ MonoBehaviour:
   handReference: {fileID: 1497271897717588}
   armDisplay: {fileID: 1441890963065418}
   isLeft: 1
+  flashlight: {fileID: 1933345993616882}
   batteryDisplay: {fileID: 1115466039116552}
-  batteryDepletionRate: 0
+  batteryDepletionRate: 1
 --- !u!136 &136025347618228474
 CapsuleCollider:
   m_ObjectHideFlags: 1
@@ -452,6 +496,19 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!136 &136516593202833404
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1385174160427686}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!222 &222319904916792404
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -517,7 +574,7 @@ RectTransform:
   m_Children:
   - {fileID: 224168557756337774}
   m_Father: {fileID: 4800554876889898}
-  m_RootOrder: 0
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 180, y: 180, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
