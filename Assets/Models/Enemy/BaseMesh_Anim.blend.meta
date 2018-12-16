@@ -3,6 +3,114 @@ guid: f045a61bbe3bb164a9ff0199efd3dbf0
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
+    100000: //RootNode
+    100002: chest
+    100004: f_index_01_L
+    100006: f_index_01_R
+    100008: f_index_02_L
+    100010: f_index_02_R
+    100012: f_index_03_L
+    100014: f_index_03_R
+    100016: f_middle_01_L
+    100018: f_middle_01_R
+    100020: f_middle_02_L
+    100022: f_middle_02_R
+    100024: f_middle_03_L
+    100026: f_middle_03_R
+    100028: f_pinky_01_L
+    100030: f_pinky_01_R
+    100032: f_pinky_02_L
+    100034: f_pinky_02_R
+    100036: f_pinky_03_L
+    100038: f_pinky_03_R
+    100040: f_ring_01_L
+    100042: f_ring_01_R
+    100044: f_ring_02_L
+    100046: f_ring_02_R
+    100048: f_ring_03_L
+    100050: f_ring_03_R
+    100052: foot_L
+    100054: foot_R
+    100056: forearm_L
+    100058: forearm_R
+    100060: hand_L
+    100062: hand_R
+    100064: head
+    100066: hips
+    100068: Human_BaseMesh
+    100070: neck
+    100072: Root
+    100074: shin_L
+    100076: shin_R
+    100078: spine
+    100080: thigh_L
+    100082: thigh_R
+    100084: thumb_02_L
+    100086: thumb_02_R
+    100088: thumb_03_L
+    100090: thumb_03_R
+    100092: toe_L
+    100094: toe_R
+    100096: upper_arm_L
+    100098: upper_arm_R
+    400000: //RootNode
+    400002: chest
+    400004: f_index_01_L
+    400006: f_index_01_R
+    400008: f_index_02_L
+    400010: f_index_02_R
+    400012: f_index_03_L
+    400014: f_index_03_R
+    400016: f_middle_01_L
+    400018: f_middle_01_R
+    400020: f_middle_02_L
+    400022: f_middle_02_R
+    400024: f_middle_03_L
+    400026: f_middle_03_R
+    400028: f_pinky_01_L
+    400030: f_pinky_01_R
+    400032: f_pinky_02_L
+    400034: f_pinky_02_R
+    400036: f_pinky_03_L
+    400038: f_pinky_03_R
+    400040: f_ring_01_L
+    400042: f_ring_01_R
+    400044: f_ring_02_L
+    400046: f_ring_02_R
+    400048: f_ring_03_L
+    400050: f_ring_03_R
+    400052: foot_L
+    400054: foot_R
+    400056: forearm_L
+    400058: forearm_R
+    400060: hand_L
+    400062: hand_R
+    400064: head
+    400066: hips
+    400068: Human_BaseMesh
+    400070: neck
+    400072: Root
+    400074: shin_L
+    400076: shin_R
+    400078: spine
+    400080: thigh_L
+    400082: thigh_R
+    400084: thumb_02_L
+    400086: thumb_02_R
+    400088: thumb_03_L
+    400090: thumb_03_R
+    400092: toe_L
+    400094: toe_R
+    400096: upper_arm_L
+    400098: upper_arm_R
+    2100000: Material
+    4300000: Human_BaseMesh
+    7400000: Default Take
+    7400002: Idle
+    7400004: Run_loop
+    7400006: Walk_loop
+    9500000: //RootNode
+    13700000: Human_BaseMesh
     2186277476908879412: ImportLogs
   externalObjects: {}
   materials:
@@ -56,7 +164,7 @@ ModelImporter:
     secondaryUVPackMargin: 4
     useFileScale: 1
     previousCalculatedGlobalScale: 1
-    hasPreviousCalculatedGlobalScale: 0
+    hasPreviousCalculatedGlobalScale: 1
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -76,7 +184,6 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     rootMotionBoneName: 
-    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1
