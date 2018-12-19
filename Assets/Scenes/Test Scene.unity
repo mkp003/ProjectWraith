@@ -3308,6 +3308,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   handedness: 1
+  otherHand: {fileID: 1290678697}
+  holding: 0
+  grabRadius: 0.1
+  grabLayer: 1
 --- !u!136 &291751510
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -9268,6 +9272,10 @@ Prefab:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 134146, guid: 156f4b5942cd6ff4e910061d6dd64193, type: 2}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 156f4b5942cd6ff4e910061d6dd64193, type: 2}
   m_IsPrefabAsset: 0
@@ -12993,6 +13001,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   handedness: 0
+  otherHand: {fileID: 291751509}
+  holding: 0
+  grabRadius: 0.1
+  grabLayer: 1
 --- !u!136 &1290678698
 CapsuleCollider:
   m_ObjectHideFlags: 0
