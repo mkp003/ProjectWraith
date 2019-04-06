@@ -12,6 +12,18 @@ public class MapGeneration : MonoBehaviour
     {
         private int width;
         private int length;
+        private int xPosition;
+        private int zPosition;
+        private bool beenVisited = false;
+        private LinkedList<Section> connectingSections;
+
+        public Section(int x, int z, int width, int length)
+        {
+            this.xPosition = x;
+            this.zPosition = z;
+            this.width = width;
+            this.length = length;
+        }
 
         public int GetWidth()
         {
@@ -21,6 +33,16 @@ public class MapGeneration : MonoBehaviour
         public int GetLength()
         {
             return length;
+        }
+
+        public int GetXPosition()
+        {
+            return xPosition;
+        }
+
+        public int GetZPosition()
+        {
+            return zPosition;
         }
     }
     // **The following are references to prefabs used to create the 
@@ -50,10 +72,12 @@ public class MapGeneration : MonoBehaviour
     [SerializeField]
     private int levellength = 150;
 
+    private Section[,] levelArray;
 
     // Start is called before the first frame update
     void Start()
     {
+        this.levelArray = new Section[this.levelWidth,this.levellength];
         AdjustDimensions();
         CreateLevel();
     }
@@ -82,8 +106,26 @@ public class MapGeneration : MonoBehaviour
     }
 
 
-    private void CreateSections()
+    /// <summary>
+    /// CreateSections() Will create all the sections that will be in the array
+    /// </summary>
+    /// <param name="xMin"></param>
+    /// <param name="xMax"></param>
+    /// <param name="zMin"></param>
+    /// <param name="zMax"></param>
+    private void CreateSections(int xMin, int xMax, int zMin, int zMax)
     {
+        // Check for minimum size
+        int currentWidth = xMax - xMin;
+        int currentLength = zMax - zMin;
+        if (currentWidth <= 2 || currentLength <= 2)
+        {
+            Section newSection = new Section(xMin, zMin, currentWidth, currentLength);
 
+        }
+        else
+        {
+
+        }
     }
 }
