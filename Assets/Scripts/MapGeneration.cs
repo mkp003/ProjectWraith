@@ -10,6 +10,7 @@ public class MapGeneration : MonoBehaviour
 {
     private class Section
     {
+        private int id;
         private int width;
         private int length;
         private int xPosition;
@@ -17,12 +18,13 @@ public class MapGeneration : MonoBehaviour
         private bool beenVisited = false;
         private LinkedList<Section> connectingSections;
 
-        public Section(int x, int z, int width, int length)
+        public Section(int id, int x, int z, int width, int length)
         {
             this.xPosition = x;
             this.zPosition = z;
             this.width = width;
             this.length = length;
+            this.connectingSections = new LinkedList<Section>();
         }
 
         public int GetWidth()
@@ -118,14 +120,16 @@ public class MapGeneration : MonoBehaviour
         // Check for minimum size
         int currentWidth = xMax - xMin;
         int currentLength = zMax - zMin;
-        if (currentWidth <= 2 || currentLength <= 2)
+        if (currentWidth <= 10 && currentLength <= 10)
         {
-            Section newSection = new Section(xMin, zMin, currentWidth, currentLength);
-
+            Section newSection = new Section(Random.Range(0, 1000), xMin, zMin, currentWidth, currentLength);
         }
         else
         {
-
+            if(currentWidth > currentLength)
+            {
+                //CreateSections()
+            }
         }
     }
 }
