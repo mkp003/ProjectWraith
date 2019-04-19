@@ -80,9 +80,10 @@ public class MapGeneration : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //this.levelArray = new Section[this.levelWidth,this.levellength];
+        this.levelArray = new Section[this.levelWidth,this.levellength];
         AdjustDimensions();
         CreateLevel();
+        PrintMap();
     }
 
 
@@ -123,23 +124,57 @@ public class MapGeneration : MonoBehaviour
         int currentLength = zMax - zMin;
         if (currentWidth <= 10 && currentLength <= 10)
         {
+            print("Creating slice that is " + currentWidth + "x" + currentLength);
+            print("From position " + xMin + "," + zMin + " to " + xMax + "," + zMax);
             Section newSection = new Section(Random.Range(0, 1000), xMin, zMin, currentWidth, currentLength);
-            
+            for(int x = xMin; x <= xMax; x++)
+            {
+                for (int z = zMin; z <= zMax; z++)
+                {
+                    this.levelArray[x, z] = newSection;
+                }
+            }
         }
         else
         {
             if(currentWidth > currentLength)
             {
                 int randomPoint = Random.Range(xMin + 1, xMax);
+                print("Random point between " + xMin + " " + xMax + " is " + randomPoint);
                 CreateSections(xMin, randomPoint, zMin, zMax);
                 CreateSections(randomPoint + 1, xMax, zMin, zMax);
             }
             else
             {
                 int randomPoint = Random.Range(zMin + 1, zMax);
-                CreateSections(xMin, xMin, zMin, randomPoint);
+                print("Random point between " + zMin + " " + zMax + " is " + randomPoint);
+                CreateSections(xMin, xMax, zMin, randomPoint);
                 CreateSections(xMin, xMax, randomPoint + 1, zMax);
             }
         }
+    }
+
+    /// <summary>
+    /// For testing
+    /// </summary>
+    public void PrintMap()
+    {
+        string line = "";
+        for (int z = 0; z < this.levelWidth; z++)
+        {
+            for (int x = 0; x < this.levellength; x++)
+            {
+                if(this.levelArray[x,z] == null)
+                {
+                    line += "o";
+                }
+                else
+                {
+                    line += "X";
+                }
+            }
+            line += "\n";
+        }
+        print(line);
     }
 }
