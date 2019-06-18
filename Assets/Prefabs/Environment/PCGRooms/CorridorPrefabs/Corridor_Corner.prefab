@@ -174,7 +174,7 @@ GameObject:
   - component: {fileID: 4636087588473175632}
   - component: {fileID: 4636087588477437800}
   m_Layer: 0
-  m_Name: Corridor_LP_Corner
+  m_Name: Corridor_Corner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

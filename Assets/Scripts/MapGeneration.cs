@@ -50,6 +50,7 @@ public class MapGeneration : MonoBehaviour
     // **The following are references to prefabs used to create the 
     // level layout**
     // Various rooms
+    /*
     [SerializeField]
     private GameObject oneDoorRoom;
     [SerializeField]
@@ -59,8 +60,16 @@ public class MapGeneration : MonoBehaviour
     [SerializeField]
     private GameObject threeDoorRoom;
     [SerializeField]
-    private GameObject corridorCorner;
+    private GameObject corridorCorner;*/
+    [SerializeField]
+    private GameObject roomCorner;
+    [SerializeField]
+    private GameObject roomWall;
+    [SerializeField]
+    private GameObject roomCenter;
+
     // Various corridors
+    // Each corridor is 4m x 4m and will be treated at a single array element
     [SerializeField]
     private GameObject corridorCorrner;
     [SerializeField]
@@ -69,11 +78,13 @@ public class MapGeneration : MonoBehaviour
     private GameObject corridorTJunction;
 
     // Dimensions of the map (width = x, length = z)
+    // 1 = 4m x 4m
     [SerializeField]
     private int levelWidth = 150;
     [SerializeField]
     private int levellength = 150;
 
+    // Each array element is 4m x 4m
     private Section[,] levelArray;
     private LinkedList<Section> listOfSections;
 
@@ -124,12 +135,14 @@ public class MapGeneration : MonoBehaviour
         int currentLength = zMax - zMin;
         if (currentWidth <= 10 && currentLength <= 10)
         {
-            print("Creating slice that is " + currentWidth + "x" + currentLength);
-            print("From position " + xMin + "," + zMin + " to " + xMax + "," + zMax);
+            //print("Creating slice that is " + currentWidth + "x" + currentLength);
+            //print("From position " + xMin + "," + zMin + " to " + xMax + "," + zMax);
             Section newSection = new Section(Random.Range(0, 1000), xMin, zMin, currentWidth, currentLength);
-            for(int x = xMin; x <= xMax; x++)
+            CreateRoom(newSection);
+            // Assign section to level array ( +/-1 to exclude the perimeter of the array)
+            for(int x = xMin + 1; x <= xMax - 1; x++)
             {
-                for (int z = zMin; z <= zMax; z++)
+                for (int z = zMin + 1; z <= zMax - 1; z++)
                 {
                     this.levelArray[x, z] = newSection;
                 }
@@ -137,20 +150,111 @@ public class MapGeneration : MonoBehaviour
         }
         else
         {
+            // We want to divide the section into two, so we do so by splitting along the longest side
             if(currentWidth > currentLength)
             {
                 int randomPoint = Random.Range(xMin + 1, xMax);
-                print("Random point between " + xMin + " " + xMax + " is " + randomPoint);
+                //print("Random point between " + xMin + " " + xMax + " is " + randomPoint);
                 CreateSections(xMin, randomPoint, zMin, zMax);
                 CreateSections(randomPoint + 1, xMax, zMin, zMax);
             }
             else
             {
                 int randomPoint = Random.Range(zMin + 1, zMax);
-                print("Random point between " + zMin + " " + zMax + " is " + randomPoint);
+                //print("Random point between " + zMin + " " + zMax + " is " + randomPoint);
                 CreateSections(xMin, xMax, zMin, randomPoint);
                 CreateSections(xMin, xMax, randomPoint + 1, zMax);
             }
+        }
+    }
+
+    /// <summary>
+    /// CreateRoom() wil create a new room based on the dimentions given by the given section
+    /// </summary>
+    /// <param name="section"></param>
+    private void CreateRoom(Section section)
+    {
+        int xEndPosition = section.GetWidth() + section.GetXPosition();
+        int zEndPosition = section.GetLength() + section.GetZPosition();
+        for (int x = section.GetXPosition(); x <= xEndPosition; x = x + 4)
+        {
+            for(int z = section.GetZPosition(); z <= zEndPosition; z = z + 4)
+            {
+                int cornerRotation = CornerRotationCheck(x, z, xEndPosition, zEndPosition);
+                if(cornerRotation >= 0)
+                {
+                    Debug.Log("Creating a corrner of angle: " + cornerRotation);
+                    GameObject temp = Instantiate(this.roomCorner, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
+                    temp.transform.Rotate(0, cornerRotation * 90, 0);
+                }
+                else if (false)
+                {
+                    // Add wall logic
+                }
+                else
+                {
+                    Instantiate(this.roomCenter, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
+                }
+                /*
+                if (x == 0 || z == 0 || x == xEndPosition - 4 || z == zEndPosition - 4)
+                {
+                    Instantiate(this.roomCorner, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
+                }
+                else
+                {
+                    Instantiate(this.roomWall, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
+                }*/
+                //Instantiate(this.roomWall, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
+            }
+            
+        }
+        //Instantiate(this.oneDoorRoom, new Vector3(newSection.GetXPosition(), 0, newSection.GetZPosition()), this.gameObject.transform.rotation);
+    }
+
+
+    private int CornerRotationCheck(int currentX, int currentZ, int endX, int endZ)
+    {
+        // Bottom left
+        if(currentX == 0 && currentZ == 0)
+        {
+            return 0;
+        }
+        else if(currentX == 0 && currentZ == endZ)
+        {
+            return 1;
+        }
+        else if(currentZ == endZ - 4 && currentX == endX - 4)
+        {
+            return 2;
+        }
+        else if(currentZ == 0 && currentX == endX - 4)
+        {
+            return 3;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+
+    private int DetermineRoomRotation(bool topLeft, bool topRight, bool bottomLeft, bool bottomRight)
+    {
+        if (topLeft)
+        {
+            return 1;
+        }
+        else if (topRight)
+        {
+            return 2;
+        }
+        else if (bottomRight)
+        {
+            return 3;
+        }
+        else
+        {
+            return 4;
         }
     }
 
