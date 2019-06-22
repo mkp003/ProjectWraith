@@ -166,12 +166,15 @@ public class MapGeneration : MonoBehaviour
     {
         int xEndPosition = section.GetWidth() + section.GetXPosition();
         int zEndPosition = section.GetLength() + section.GetZPosition();
+        int xStartPosition = section.GetXPosition();
+        int zStartPosition = section.GetZPosition();
+
         for (int x = section.GetXPosition(); x <= xEndPosition; x++)
         {
             for(int z = section.GetZPosition(); z <= zEndPosition; z++)
             {
                 // Check if the subsection is a corner
-                int cornerRotation = CornerRotationCheck(x, z, xEndPosition, zEndPosition);
+                int cornerRotation = CornerRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (cornerRotation >= 0)
                 {
                     Debug.Log("Creating a corrner of angle: " + cornerRotation);
@@ -180,10 +183,10 @@ public class MapGeneration : MonoBehaviour
                     continue;
                 }
                 // Check if the subsection is a wall
-                int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition);
+                int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (wallRotation >= 0)
                 {
-                    Debug.Log("Creating a wall of angle: " + cornerRotation);
+                    Debug.Log("Creating a wall of angle: " + wallRotation);
                     GameObject temp = Instantiate(this.roomWall, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, wallRotation * 90, 0);
                 }
@@ -205,23 +208,25 @@ public class MapGeneration : MonoBehaviour
     /// <param name="currentZ"></param>
     /// <param name="endX"></param>
     /// <param name="endZ"></param>
+    /// <param name="startX"></param>
+    /// <param name="startZ"></param>
     /// <returns></returns>
-    private int CornerRotationCheck(int currentX, int currentZ, int endX, int endZ)
+    private int CornerRotationCheck(int currentX, int currentZ, int endX, int endZ, int startX, int startZ)
     {
         // Bottom left
-        if(currentX == 0 && currentZ == 0)
+        if(currentX == startX && currentZ == startZ)
         {
             return 0;
         }
-        else if(currentX == 0 && currentZ == endZ)
+        else if(currentX == startX && currentZ == endZ)
         {
             return 1;
         }
-        else if(currentZ == endZ - 4 && currentX == endX - 4)
+        else if(currentZ == endZ  && currentX == endX)
         {
             return 2;
         }
-        else if(currentZ == 0 && currentX == endX - 4)
+        else if(currentZ == startZ && currentX == endX)
         {
             return 3;
         }
@@ -239,22 +244,24 @@ public class MapGeneration : MonoBehaviour
     /// <param name="currentZ"></param>
     /// <param name="endX"></param>
     /// <param name="endZ"></param>
+    /// <param name="startX"></param>
+    /// <param name="startZ"></param>
     /// <returns></returns>
-    private int WallRotationCheck(int currentX, int currentZ, int endX, int endZ)
+    private int WallRotationCheck(int currentX, int currentZ, int endX, int endZ, int startX, int startZ)
     {
-        if(currentX == 0 && (currentZ > 0 || currentZ < endZ - 4))
+        if(currentX == startX && (currentZ > startZ && currentZ < endZ))
         {
             return 0;
         }
-        else if(currentZ == endZ - 4 && (currentX > 0 || currentX < endX - 4))
+        else if(currentZ == endZ && (currentX > startX && currentX < endX))
         {
             return 1;
         }
-        else if (currentX == endX - 4 && (currentZ > 0 || currentZ < endZ - 4))
+        else if (currentX == endX && (currentZ > startZ && currentZ < endZ))
         {
             return 2;
         }
-        else if (currentZ == 0 && (currentX > 0 || currentX < endX - 4))
+        else if (currentZ == startZ && (currentX > startX && currentX < endX))
         {
             return 3;
         }
