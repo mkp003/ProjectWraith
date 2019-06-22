@@ -262,14 +262,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 131278, guid: 672bd221defa5bb4d82681fe5d04aa4d, type: 3}
-      propertyPath: m_Name
-      value: Room_2_Floor_Corner_In (4)
-      objectReference: {fileID: 0}
-    - target: {fileID: 131278, guid: 672bd221defa5bb4d82681fe5d04aa4d, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 471630, guid: 672bd221defa5bb4d82681fe5d04aa4d, type: 3}
       propertyPath: m_RootOrder
       value: 3
@@ -293,6 +285,14 @@ PrefabInstance:
     - target: {fileID: 471630, guid: 672bd221defa5bb4d82681fe5d04aa4d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 131278, guid: 672bd221defa5bb4d82681fe5d04aa4d, type: 3}
+      propertyPath: m_Name
+      value: Room_2_Floor_Corner_In (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 131278, guid: 672bd221defa5bb4d82681fe5d04aa4d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 672bd221defa5bb4d82681fe5d04aa4d, type: 3}
@@ -333,7 +333,8 @@ MonoBehaviour:
     type: 3}
   corridorCorrner: {fileID: 0}
   corridorSmall: {fileID: 0}
-  corridorTJunction: {fileID: 0}
+  corridorTJunction: {fileID: 4214925212560038513, guid: 3ce4a715a094acf46a691d9db493f0a1,
+    type: 3}
   levelWidth: 20
   levellength: 20
 --- !u!4 &1599463071

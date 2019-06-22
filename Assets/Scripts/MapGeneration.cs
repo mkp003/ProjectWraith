@@ -49,18 +49,7 @@ public class MapGeneration : MonoBehaviour
     }
     // **The following are references to prefabs used to create the 
     // level layout**
-    // Various rooms
-    /*
-    [SerializeField]
-    private GameObject oneDoorRoom;
-    [SerializeField]
-    private GameObject twoDoorRoomCorner;
-    [SerializeField]
-    private GameObject twoDoorRoomOpposite;
-    [SerializeField]
-    private GameObject threeDoorRoom;
-    [SerializeField]
-    private GameObject corridorCorner;*/
+    // Various room components
     [SerializeField]
     private GameObject roomCorner;
     [SerializeField]
@@ -118,6 +107,7 @@ public class MapGeneration : MonoBehaviour
     private void CreateLevel()
     {
         CreateSections(0, this.levelWidth - 1, 0, this.levellength - 1);
+        CreateCorridors();
     }
 
 
@@ -137,9 +127,9 @@ public class MapGeneration : MonoBehaviour
         {
             //print("Creating slice that is " + currentWidth + "x" + currentLength);
             //print("From position " + xMin + "," + zMin + " to " + xMax + "," + zMax);
-            Section newSection = new Section(Random.Range(0, 1000), xMin, zMin, currentWidth, currentLength);
+            Section newSection = new Section(Random.Range(0, 1000), xMin + 1, zMin + 1, currentWidth - 2, currentLength - 2);
             CreateRoom(newSection);
-            // Assign section to level array ( +/-1 to exclude the perimeter of the array)
+            // Assign section to level array ( +/-1 to exclude the perimeter of the section)
             for(int x = xMin + 1; x <= xMax - 1; x++)
             {
                 for (int z = zMin + 1; z <= zMax - 1; z++)
@@ -176,42 +166,46 @@ public class MapGeneration : MonoBehaviour
     {
         int xEndPosition = section.GetWidth() + section.GetXPosition();
         int zEndPosition = section.GetLength() + section.GetZPosition();
-        for (int x = section.GetXPosition(); x <= xEndPosition; x = x + 4)
+        for (int x = section.GetXPosition(); x <= xEndPosition; x++)
         {
-            for(int z = section.GetZPosition(); z <= zEndPosition; z = z + 4)
+            for(int z = section.GetZPosition(); z <= zEndPosition; z++)
             {
+                // Check if the subsection is a corner
                 int cornerRotation = CornerRotationCheck(x, z, xEndPosition, zEndPosition);
-                if(cornerRotation >= 0)
+                if (cornerRotation >= 0)
                 {
                     Debug.Log("Creating a corrner of angle: " + cornerRotation);
-                    GameObject temp = Instantiate(this.roomCorner, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
+                    GameObject temp = Instantiate(this.roomCorner, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, cornerRotation * 90, 0);
+                    continue;
                 }
-                else if (false)
+                // Check if the subsection is a wall
+                int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition);
+                if (wallRotation >= 0)
                 {
-                    // Add wall logic
+                    Debug.Log("Creating a wall of angle: " + cornerRotation);
+                    GameObject temp = Instantiate(this.roomWall, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                    temp.transform.Rotate(0, wallRotation * 90, 0);
                 }
+                // Assume Middle piece
                 else
                 {
-                    Instantiate(this.roomCenter, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
+                    Instantiate(this.roomCenter, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                 }
-                /*
-                if (x == 0 || z == 0 || x == xEndPosition - 4 || z == zEndPosition - 4)
-                {
-                    Instantiate(this.roomCorner, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
-                }
-                else
-                {
-                    Instantiate(this.roomWall, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
-                }*/
-                //Instantiate(this.roomWall, new Vector3(x, 0, z), this.gameObject.transform.rotation, this.transform);
             }
             
         }
-        //Instantiate(this.oneDoorRoom, new Vector3(newSection.GetXPosition(), 0, newSection.GetZPosition()), this.gameObject.transform.rotation);
     }
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="currentX"></param>
+    /// <param name="currentZ"></param>
+    /// <param name="endX"></param>
+    /// <param name="endZ"></param>
+    /// <returns></returns>
     private int CornerRotationCheck(int currentX, int currentZ, int endX, int endZ)
     {
         // Bottom left
@@ -238,25 +232,56 @@ public class MapGeneration : MonoBehaviour
     }
 
 
-    private int DetermineRoomRotation(bool topLeft, bool topRight, bool bottomLeft, bool bottomRight)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="currentX"></param>
+    /// <param name="currentZ"></param>
+    /// <param name="endX"></param>
+    /// <param name="endZ"></param>
+    /// <returns></returns>
+    private int WallRotationCheck(int currentX, int currentZ, int endX, int endZ)
     {
-        if (topLeft)
+        if(currentX == 0 && (currentZ > 0 || currentZ < endZ - 4))
+        {
+            return 0;
+        }
+        else if(currentZ == endZ - 4 && (currentX > 0 || currentX < endX - 4))
         {
             return 1;
         }
-        else if (topRight)
+        else if (currentX == endX - 4 && (currentZ > 0 || currentZ < endZ - 4))
         {
             return 2;
         }
-        else if (bottomRight)
+        else if (currentZ == 0 && (currentX > 0 || currentX < endX - 4))
         {
             return 3;
         }
         else
         {
-            return 4;
+            return -1;
         }
     }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    private void CreateCorridors()
+    {
+        for(int x = 0; x < this.levelWidth; x++)
+        {
+            for(int z = 0; z < this.levellength; z++)
+            {
+                if(this.levelArray[x,z] == null)
+                {
+                    Instantiate(this.corridorTJunction, new Vector3(x * 4.0f, 0, z * 4.0f), this.transform.rotation, this.transform);
+                }
+            }
+        }
+    }
+
 
     /// <summary>
     /// For testing
