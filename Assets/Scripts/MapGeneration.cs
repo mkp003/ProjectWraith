@@ -13,15 +13,23 @@ public class MapGeneration : MonoBehaviour
         private int id;
         private int width;
         private int length;
-        private int xPosition;
-        private int zPosition;
+        private int xIndexPosition;
+        private int zIndexPosition;
         private bool beenVisited = false;
         private LinkedList<Section> connectingSections;
 
+        /// <summary>
+        /// Constructor for the Section class.
+        /// </summary>
+        /// <param name="id">Unique Identifier for this section</param>
+        /// <param name="x">The starting Array index position for this Section (width)</param>
+        /// <param name="z">The starting Array index position for this Section (length)</param>
+        /// <param name="width">The physical width of this section (meters)</param>
+        /// <param name="length">The physical length of this section (meters)</param>
         public Section(int id, int x, int z, int width, int length)
         {
-            this.xPosition = x;
-            this.zPosition = z;
+            this.xIndexPosition = x;
+            this.zIndexPosition = z;
             this.width = width;
             this.length = length;
             this.connectingSections = new LinkedList<Section>();
@@ -37,14 +45,14 @@ public class MapGeneration : MonoBehaviour
             return length;
         }
 
-        public int GetXPosition()
+        public int GetXIndexPosition()
         {
-            return xPosition;
+            return xIndexPosition;
         }
 
-        public int GetZPosition()
+        public int GetZIndexPosition()
         {
-            return zPosition;
+            return zIndexPosition;
         }
     }
     // **The following are references to prefabs used to create the 
@@ -58,7 +66,7 @@ public class MapGeneration : MonoBehaviour
     private GameObject roomCenter;
 
     // Various corridors
-    // Each corridor is 4m x 4m and will be treated at a single array element
+    // Each corridor is 6m x 6m and will be treated at a single array element
     [SerializeField]
     private GameObject corridorCorrner;
     [SerializeField]
@@ -67,13 +75,13 @@ public class MapGeneration : MonoBehaviour
     private GameObject corridorTJunction;
 
     // Dimensions of the map (width = x, length = z)
-    // 1 = 4m x 4m
+    // 1 = 6m x 6m
     [SerializeField]
     private int levelWidth = 150;
     [SerializeField]
     private int levellength = 150;
 
-    // Each array element is 4m x 4m
+    // Each array element is 6m x 6m
     private Section[,] levelArray;
     private LinkedList<Section> listOfSections;
 
@@ -107,7 +115,7 @@ public class MapGeneration : MonoBehaviour
     private void CreateLevel()
     {
         CreateSections(0, this.levelWidth - 1, 0, this.levellength - 1);
-        CreateCorridors();
+        //CreateCorridors();
     }
 
 
@@ -125,8 +133,7 @@ public class MapGeneration : MonoBehaviour
         int currentLength = zMax - zMin;
         if (currentWidth <= 10 && currentLength <= 10)
         {
-            //print("Creating slice that is " + currentWidth + "x" + currentLength);
-            //print("From position " + xMin + "," + zMin + " to " + xMax + "," + zMax);
+            // Create section and exclude 1 array element on all sides for potential hallways
             Section newSection = new Section(Random.Range(0, 1000), xMin + 1, zMin + 1, currentWidth - 2, currentLength - 2);
             CreateRoom(newSection);
             // Assign section to level array ( +/-1 to exclude the perimeter of the section)
@@ -143,15 +150,13 @@ public class MapGeneration : MonoBehaviour
             // We want to divide the section into two, so we do so by splitting along the longest side
             if(currentWidth > currentLength)
             {
-                int randomPoint = Random.Range(xMin + 1, xMax);
-                //print("Random point between " + xMin + " " + xMax + " is " + randomPoint);
+                int randomPoint = Random.Range(xMin + 1, xMax - 1);
                 CreateSections(xMin, randomPoint, zMin, zMax);
                 CreateSections(randomPoint + 1, xMax, zMin, zMax);
             }
             else
             {
                 int randomPoint = Random.Range(zMin + 1, zMax);
-                //print("Random point between " + zMin + " " + zMax + " is " + randomPoint);
                 CreateSections(xMin, xMax, zMin, randomPoint);
                 CreateSections(xMin, xMax, randomPoint + 1, zMax);
             }
@@ -164,21 +169,23 @@ public class MapGeneration : MonoBehaviour
     /// <param name="section"></param>
     private void CreateRoom(Section section)
     {
-        int xEndPosition = section.GetWidth() + section.GetXPosition();
-        int zEndPosition = section.GetLength() + section.GetZPosition();
-        int xStartPosition = section.GetXPosition();
-        int zStartPosition = section.GetZPosition();
+        //int xEndPosition = section.GetXEndingPosition();
+        //int zEndPosition = section.GetZEndingPosition();
+        int xEndPosition = section.GetXIndexPosition() + section.GetWidth();
+        int zEndPosition = section.GetZIndexPosition() + section.GetLength();
 
-        for (int x = section.GetXPosition(); x <= xEndPosition; x++)
+        int xStartPosition = section.GetXIndexPosition();
+        int zStartPosition = section.GetZIndexPosition();
+
+        for (int x = section.GetXIndexPosition(); x <= xEndPosition; x++)
         {
-            for(int z = section.GetZPosition(); z <= zEndPosition; z++)
+            for(int z = section.GetZIndexPosition(); z <= zEndPosition; z++)
             {
                 // Check if the subsection is a corner
                 int cornerRotation = CornerRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (cornerRotation >= 0)
                 {
-                    Debug.Log("Creating a corrner of angle: " + cornerRotation);
-                    GameObject temp = Instantiate(this.roomCorner, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                    GameObject temp = Instantiate(this.roomCorner, new Vector3(x * 6.0f, 0, z * 6.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, cornerRotation * 90, 0);
                     continue;
                 }
@@ -186,31 +193,31 @@ public class MapGeneration : MonoBehaviour
                 int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (wallRotation >= 0)
                 {
-                    Debug.Log("Creating a wall of angle: " + wallRotation);
-                    GameObject temp = Instantiate(this.roomWall, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                    GameObject temp = Instantiate(this.roomWall, new Vector3(x * 6.0f, 0, z * 6.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, wallRotation * 90, 0);
                 }
                 // Assume Middle piece
                 else
                 {
-                    Instantiate(this.roomCenter, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                    Instantiate(this.roomCenter, new Vector3(x * 6.0f, 0, z * 6.0f), this.gameObject.transform.rotation, this.transform);
                 }
             }
-            
         }
     }
 
 
     /// <summary>
-    /// 
+    /// CornerRotationCheck() Checks what the rotation of a corner room will be based on 
+    /// the dimensions given in the argument
     /// </summary>
-    /// <param name="currentX"></param>
-    /// <param name="currentZ"></param>
-    /// <param name="endX"></param>
-    /// <param name="endZ"></param>
-    /// <param name="startX"></param>
-    /// <param name="startZ"></param>
-    /// <returns></returns>
+    /// <param name="currentX">Current X position in the section</param>
+    /// <param name="currentZ">Current Z position in the section</param>
+    /// <param name="endX">Last X position in the section</param>
+    /// <param name="endZ">Lat Z position in the section</param>
+    /// <param name="startX">First X position in the section</param>
+    /// <param name="startZ">First Z position in the section</param>
+    /// <returns>int representing the number or 90 degree rotations:
+    /// 0 = 0 Deg, 1 = 90 Deg, 2 = 180 Deg, 3 = 270 Deg, -1 = Not a corner</returns>
     private int CornerRotationCheck(int currentX, int currentZ, int endX, int endZ, int startX, int startZ)
     {
         // Bottom left
@@ -238,15 +245,17 @@ public class MapGeneration : MonoBehaviour
 
 
     /// <summary>
-    /// 
+    /// WallRotationCheck() Checks what the rotation of a wall room will be based on 
+    /// the dimensions given in the argument
     /// </summary>
-    /// <param name="currentX"></param>
-    /// <param name="currentZ"></param>
-    /// <param name="endX"></param>
-    /// <param name="endZ"></param>
-    /// <param name="startX"></param>
-    /// <param name="startZ"></param>
-    /// <returns></returns>
+    /// <param name="currentX">Current X position in the section</param>
+    /// <param name="currentZ">Current Z position in the section</param>
+    /// <param name="endX">Last X position in the section</param>
+    /// <param name="endZ">Lat Z position in the section</param>
+    /// <param name="startX">First X position in the section</param>
+    /// <param name="startZ">First Z position in the section</param>
+    /// <returns>int representing the number or 90 degree rotations:
+    /// 0 = 0 Deg, 1 = 90 Deg, 2 = 180 Deg, 3 = 270 Deg, -1 = Not a wall</returns>
     private int WallRotationCheck(int currentX, int currentZ, int endX, int endZ, int startX, int startZ)
     {
         if(currentX == startX && (currentZ > startZ && currentZ < endZ))
