@@ -115,7 +115,7 @@ public class MapGeneration : MonoBehaviour
     private void CreateLevel()
     {
         CreateSections(0, this.levelWidth - 1, 0, this.levellength - 1);
-        //CreateCorridors();
+        CreateCorridors();
     }
 
 
@@ -292,7 +292,7 @@ public class MapGeneration : MonoBehaviour
             {
                 if(this.levelArray[x,z] == null)
                 {
-                    Instantiate(this.corridorTJunction, new Vector3(x * 4.0f, 0, z * 4.0f), this.transform.rotation, this.transform);
+                    Instantiate(this.corridorSmall, new Vector3(x * 4.0f, -2, z * 4.0f), this.transform.rotation, this.transform);
                 }
             }
         }
