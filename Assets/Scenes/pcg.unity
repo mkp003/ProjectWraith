@@ -334,11 +334,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7ad94d17d113a94f90f075580254833, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomCorner: {fileID: 5915302500214776403, guid: 92e44df252c0bb2489c7a780b3873d34,
+  roomCorner: {fileID: 2629249948911208566, guid: 198e3990ac1808049a545a0501dd3105,
     type: 3}
-  roomWall: {fileID: 1655038575911565260, guid: 4ba4ea0b493c3464faf5e68313682278,
+  roomWall: {fileID: 4276109510804834482, guid: ded2e3d06354d5143ad6eafb7389e307,
     type: 3}
-  roomCenter: {fileID: 180285324568708164, guid: cba1e7b194152504bac8354a793531c8,
+  roomCenter: {fileID: 6911764811500553228, guid: 68a34200bb967c1488cc9b1310f86c85,
     type: 3}
   corridorCorrner: {fileID: 4636087588475129638, guid: 6daf213819595a5468a383ff9a568f69,
     type: 3}
