@@ -75,7 +75,7 @@ public class MapGeneration : MonoBehaviour
     private GameObject corridorTJunction;
 
     // Dimensions of the map (width = x, length = z)
-    // 1 = 6m x 6m
+    // 1 = 4m x 4m
     [SerializeField]
     private int levelWidth = 150;
     [SerializeField]
@@ -185,7 +185,7 @@ public class MapGeneration : MonoBehaviour
                 int cornerRotation = CornerRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (cornerRotation >= 0)
                 {
-                    GameObject temp = Instantiate(this.roomCorner, new Vector3(x * 6.0f, 0, z * 6.0f), this.gameObject.transform.rotation, this.transform);
+                    GameObject temp = Instantiate(this.roomCorner, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, cornerRotation * 90, 0);
                     continue;
                 }
@@ -193,13 +193,13 @@ public class MapGeneration : MonoBehaviour
                 int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (wallRotation >= 0)
                 {
-                    GameObject temp = Instantiate(this.roomWall, new Vector3(x * 6.0f, 0, z * 6.0f), this.gameObject.transform.rotation, this.transform);
+                    GameObject temp = Instantiate(this.roomWall, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, wallRotation * 90, 0);
                 }
                 // Assume Middle piece
                 else
                 {
-                    Instantiate(this.roomCenter, new Vector3(x * 6.0f, 0, z * 6.0f), this.gameObject.transform.rotation, this.transform);
+                    Instantiate(this.roomCenter, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                 }
             }
         }
