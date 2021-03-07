@@ -15,8 +15,9 @@ public class MapGeneration : MonoBehaviour
         private int length;
         private int xIndexPosition;
         private int zIndexPosition;
+        private List<System.Tuple<int, Door>> doors;
         private bool beenVisited = false;
-        private LinkedList<Section> connectingSections;
+        private List<GameObject> sectionComponents;
 
         /// <summary>
         /// Constructor for the Section class.
@@ -32,7 +33,8 @@ public class MapGeneration : MonoBehaviour
             this.zIndexPosition = z;
             this.width = width;
             this.length = length;
-            this.connectingSections = new LinkedList<Section>();
+            sectionComponents = new List<GameObject>();
+            doors = new List<System.Tuple<int, Door>>();
         }
 
         public int GetWidth()
@@ -54,7 +56,31 @@ public class MapGeneration : MonoBehaviour
         {
             return zIndexPosition;
         }
+
+        public void AddSectionComponent(GameObject _component)
+        {
+            sectionComponents.Add(_component);
+        }
     }
+
+    /// <summary>
+    /// Door represents a class of doors used as enterences to sections
+    /// </summary>
+    private class Door
+    {
+        GameObject doorGameObject;
+        int xPos;
+        int zPos;
+
+        public Door(GameObject _door, int _xPosition, int _zPosition)
+        {
+            doorGameObject = _door;
+            xPos = _xPosition;
+            zPos = _zPosition;
+        }
+    }
+
+
     // **The following are references to prefabs used to create the 
     // level layout**
     // Various room components
@@ -64,6 +90,8 @@ public class MapGeneration : MonoBehaviour
     private GameObject roomWall;
     [SerializeField]
     private GameObject roomCenter;
+    [SerializeField]
+    private GameObject roomDoor;
 
     // Various corridors
     // Each corridor is 6m x 6m and will be treated at a single array element
@@ -81,9 +109,9 @@ public class MapGeneration : MonoBehaviour
     [SerializeField]
     private int levellength = 150;
 
-    // Each array element is 6m x 6m
+    // Each array element is 4m x 4m
     private Section[,] levelArray;
-    private LinkedList<Section> listOfSections;
+    private List<Section> listOfSections = new List<Section>();
 
     // Start is called before the first frame update
     void Start()
@@ -112,9 +140,13 @@ public class MapGeneration : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// CreateLevel will procedurally generate a new level with the predefined dimensions.
+    /// </summary>
     private void CreateLevel()
     {
         CreateSections(0, this.levelWidth - 1, 0, this.levellength - 1);
+        //CreateSectionDoors();
         CreateCorridors();
     }
 
@@ -136,6 +168,7 @@ public class MapGeneration : MonoBehaviour
             // Create section and exclude 1 array element on all sides for potential hallways
             Section newSection = new Section(Random.Range(0, 1000), xMin + 1, zMin + 1, currentWidth - 2, currentLength - 2);
             CreateRoom(newSection);
+            listOfSections.Add(newSection);
             // Assign section to level array ( +/-1 to exclude the perimeter of the section)
             for(int x = xMin + 1; x <= xMax - 1; x++)
             {
@@ -177,6 +210,10 @@ public class MapGeneration : MonoBehaviour
         int xStartPosition = section.GetXIndexPosition();
         int zStartPosition = section.GetZIndexPosition();
 
+        // Keep a refernce to all walls so we can add doors to them
+        List<System.Tuple<int, int>> walls = new List<System.Tuple<int, int>>();
+
+        // Create all the walls, floor and ceiling
         for (int x = section.GetXIndexPosition(); x <= xEndPosition; x++)
         {
             for(int z = section.GetZIndexPosition(); z <= zEndPosition; z++)
@@ -187,6 +224,7 @@ public class MapGeneration : MonoBehaviour
                 {
                     GameObject temp = Instantiate(this.roomCorner, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, cornerRotation * 90, 0);
+                    section.AddSectionComponent(temp);
                     continue;
                 }
                 // Check if the subsection is a wall
@@ -195,14 +233,30 @@ public class MapGeneration : MonoBehaviour
                 {
                     GameObject temp = Instantiate(this.roomWall, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, wallRotation * 90, 0);
+                    section.AddSectionComponent(temp);
+                    walls.Add(new System.Tuple<int, int>(x, z));
                 }
                 // Assume Middle piece
                 else
                 {
-                    Instantiate(this.roomCenter, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                    GameObject temp = Instantiate(this.roomCenter, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                    section.AddSectionComponent(temp);
+                    
                 }
             }
         }
+
+        // Create doors 
+        // Determine how many doors will be in this section
+        int numberOfRegularWalls = (2 * (section.GetWidth() - 2)) + (2 * (section.GetLength() - 2));
+        int numberOfDoors = Random.Range(0, numberOfRegularWalls) + 1;
+        // Randomly determine where the doors will be spawned
+        for(int i = 0; i < numberOfDoors; i++)
+        {
+            int pos = Random.Range(0, numberOfDoors);
+
+        }
+
     }
 
 
@@ -282,7 +336,32 @@ public class MapGeneration : MonoBehaviour
 
 
     /// <summary>
-    /// 
+    /// CreateSectionDoors will create doorways to all the sections that exist in the level.
+    /// </summary>
+    /*private void CreateSectionDoors()
+    {
+        foreach(Section room in listOfSections)
+        {
+            // Determine how many doors we should add to the room (at least 1)
+            int numberOfRegularWalls = (2 * (room.GetWidth() - 2)) + (2 * (room.GetLength() - 2));
+            int numberOfDoors = Random.Range(0, numberOfRegularWalls) + 1;
+
+            for (int i = 0; i < numberOfDoors; i++)
+            {
+                //number
+            }
+
+
+            int xStart = room.GetXIndexPosition();
+            int zStart = room.GetZIndexPosition();
+
+           
+        }
+    }*/
+
+
+    /// <summary>
+    /// CreateCorridors will create hallways/corridors between all the room sections
     /// </summary>
     private void CreateCorridors()
     {
