@@ -202,16 +202,43 @@ public class MapGeneration : MonoBehaviour
     /// <param name="section"></param>
     private void CreateRoom(Section section)
     {
-        //int xEndPosition = section.GetXEndingPosition();
-        //int zEndPosition = section.GetZEndingPosition();
         int xEndPosition = section.GetXIndexPosition() + section.GetWidth();
         int zEndPosition = section.GetZIndexPosition() + section.GetLength();
 
         int xStartPosition = section.GetXIndexPosition();
         int zStartPosition = section.GetZIndexPosition();
 
-        // Keep a refernce to all walls so we can add doors to them
-        List<System.Tuple<int, int>> walls = new List<System.Tuple<int, int>>();
+        // Determine how many doors will be in this section (and where they will be)
+        int xWalls = section.GetWidth();
+        int zWalls = section.GetLength();
+        if(xWalls <= 2)
+        {
+            xWalls = 0;
+        }
+        else
+        {
+            xWalls = 2 * (xWalls - 2);
+        }
+        if(zWalls <= 2)
+        {
+            zWalls = 0;
+        }
+        else
+        {
+            zWalls = 2 * (zWalls - 2);
+        }
+        int numberOfRegularWalls = xWalls + zWalls;
+        int numberOfDoors = Random.Range(1, numberOfRegularWalls);
+        List<System.Tuple<int, int>> doorLocations = new List<System.Tuple<int, int>>();
+        for(int i = 0; i < numberOfDoors; i++)
+        {
+            int x = Random.Range(xStartPosition + 1, xEndPosition);
+            int z = Random.Range(zStartPosition + 1, zEndPosition);
+            System.Tuple<int, int> doorLocation = new System.Tuple<int, int>(x, z);
+            doorLocations.Add(doorLocation);
+        }
+
+        Debug.LogError("This section has this many doors: " + numberOfDoors);
 
         // Create all the walls, floor and ceiling
         for (int x = section.GetXIndexPosition(); x <= xEndPosition; x++)
@@ -231,10 +258,20 @@ public class MapGeneration : MonoBehaviour
                 int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (wallRotation >= 0)
                 {
-                    GameObject temp = Instantiate(this.roomWall, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                    GameObject prefabToUse;
+                    // Determine if this wall is a door
+                    if(CheckIsDoorLocation(doorLocations, x, z))
+                    {
+                        prefabToUse = this.roomDoor;
+                        Debug.LogError("This is a door");
+                    }
+                    else
+                    {
+                        prefabToUse = this.roomWall;
+                    }
+                    GameObject temp = Instantiate(prefabToUse, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, wallRotation * 90, 0);
                     section.AddSectionComponent(temp);
-                    walls.Add(new System.Tuple<int, int>(x, z));
                 }
                 // Assume Middle piece
                 else
@@ -246,16 +283,6 @@ public class MapGeneration : MonoBehaviour
             }
         }
 
-        // Create doors 
-        // Determine how many doors will be in this section
-        int numberOfRegularWalls = (2 * (section.GetWidth() - 2)) + (2 * (section.GetLength() - 2));
-        int numberOfDoors = Random.Range(0, numberOfRegularWalls) + 1;
-        // Randomly determine where the doors will be spawned
-        for(int i = 0; i < numberOfDoors; i++)
-        {
-            int pos = Random.Range(0, numberOfDoors);
-
-        }
 
     }
 
@@ -336,28 +363,23 @@ public class MapGeneration : MonoBehaviour
 
 
     /// <summary>
-    /// CreateSectionDoors will create doorways to all the sections that exist in the level.
+    /// CheckIsDoorLocation will check to see if the current x and z coordinates represent a door location.
     /// </summary>
-    /*private void CreateSectionDoors()
+    /// <param name="_locations">List of Tuples representing x and z coordinates or doors</param>
+    /// <param name="_currentX">Current x coordinate</param>
+    /// <param name="_currentZ">Current z coordinate</param>
+    /// <returns>True if the current X and Y coordinates are a tuple in the given list, false otherwise</returns>
+    private bool CheckIsDoorLocation(List<System.Tuple<int, int>> _locations, int _currentX, int _currentZ)
     {
-        foreach(Section room in listOfSections)
+        foreach(System.Tuple<int, int> door in _locations)
         {
-            // Determine how many doors we should add to the room (at least 1)
-            int numberOfRegularWalls = (2 * (room.GetWidth() - 2)) + (2 * (room.GetLength() - 2));
-            int numberOfDoors = Random.Range(0, numberOfRegularWalls) + 1;
-
-            for (int i = 0; i < numberOfDoors; i++)
+            if(door.Item1 == _currentX && door.Item2 == _currentZ)
             {
-                //number
+                return true;
             }
-
-
-            int xStart = room.GetXIndexPosition();
-            int zStart = room.GetZIndexPosition();
-
-           
         }
-    }*/
+        return false;
+    }
 
 
     /// <summary>

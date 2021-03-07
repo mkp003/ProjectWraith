@@ -340,6 +340,8 @@ MonoBehaviour:
     type: 3}
   roomCenter: {fileID: 6911764811500553228, guid: 68a34200bb967c1488cc9b1310f86c85,
     type: 3}
+  roomDoor: {fileID: 9133715625052061254, guid: 3117c36181344c04888ab1b5211f0ffa,
+    type: 3}
   corridorCorrner: {fileID: 4636087588475129638, guid: 6daf213819595a5468a383ff9a568f69,
     type: 3}
   corridorSmall: {fileID: 875463004102576530, guid: 4e0fb9d10ef02d14b99f09087925e003,
