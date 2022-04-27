@@ -228,57 +228,70 @@ public class MapGeneration : MonoBehaviour
             zWalls = 2 * (zWalls - 2);
         }
         int numberOfRegularWalls = xWalls + zWalls;
-        int numberOfDoors = Random.Range(1, numberOfRegularWalls);
+        int numberOfPossibleDoors = Random.Range(1, numberOfRegularWalls);
         List<System.Tuple<int, int>> doorLocations = new List<System.Tuple<int, int>>();
-        for(int i = 0; i < numberOfDoors; i++)
+        for(int i = 0; i < numberOfPossibleDoors; i++)
         {
-            int x = Random.Range(xStartPosition + 1, xEndPosition);
-            int z = Random.Range(zStartPosition + 1, zEndPosition);
+            int x = Random.Range(xStartPosition + 1, xEndPosition - 1);
+            int z = Random.Range(zStartPosition + 1, zEndPosition - 1);
             System.Tuple<int, int> doorLocation = new System.Tuple<int, int>(x, z);
-            doorLocations.Add(doorLocation);
+            // If the position is already a door, do not add it again
+            if (!CheckIsDoorLocation(doorLocations, x, z))
+            {
+                doorLocations.Add(doorLocation);
+                Debug.LogError("-----Here is the door location: " + doorLocation);
+            }
         }
 
-        Debug.LogError("This section has this many doors: " + numberOfDoors);
+        Debug.LogError("This section has this many doors Confirm: " + doorLocations.Count);
 
         // Create all the walls, floor and ceiling
         for (int x = section.GetXIndexPosition(); x <= xEndPosition; x++)
         {
             for(int z = section.GetZIndexPosition(); z <= zEndPosition; z++)
             {
+                Debug.LogError("Checking this position: " + x + ", " + z);
                 // Check if the subsection is a corner
                 int cornerRotation = CornerRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (cornerRotation >= 0)
                 {
+                    Debug.LogError("**This is a corner.");
                     GameObject temp = Instantiate(this.roomCorner, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, cornerRotation * 90, 0);
                     section.AddSectionComponent(temp);
-                    continue;
                 }
-                // Check if the subsection is a wall
-                int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
-                if (wallRotation >= 0)
-                {
-                    GameObject prefabToUse;
-                    // Determine if this wall is a door
-                    if(CheckIsDoorLocation(doorLocations, x, z))
-                    {
-                        prefabToUse = this.roomDoor;
-                        Debug.LogError("This is a door");
-                    }
-                    else
-                    {
-                        prefabToUse = this.roomWall;
-                    }
-                    GameObject temp = Instantiate(prefabToUse, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
-                    temp.transform.Rotate(0, wallRotation * 90, 0);
-                    section.AddSectionComponent(temp);
-                }
-                // Assume Middle piece
                 else
                 {
-                    GameObject temp = Instantiate(this.roomCenter, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
-                    section.AddSectionComponent(temp);
-                    
+                    Debug.LogError("**This is NOT a corner.");
+                    // Check if the subsection is a wall
+                    int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
+                    if (wallRotation >= 0)
+                    {
+                        Debug.LogError("**This is a wall.");
+                        GameObject prefabToUse;
+                        // Determine if this wall is a door
+                        Debug.LogError("****Checking if wall is a door: " + x + ", " + z);
+                        if (CheckIsDoorLocation(doorLocations, x, z))
+                        {
+                            prefabToUse = this.roomDoor;
+                            Debug.LogError("This is a door");
+                        }
+                        else
+                        {
+                            prefabToUse = this.roomWall;
+                        }
+                        GameObject temp = Instantiate(prefabToUse, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                        temp.transform.Rotate(0, wallRotation * 90, 0);
+                        section.AddSectionComponent(temp);
+                    }
+                    // Assume Middle piece
+                    else
+                    {
+                        Debug.LogError("**This is a center.");
+                        GameObject temp = Instantiate(this.roomCenter, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
+                        section.AddSectionComponent(temp);
+
+                    }
                 }
             }
         }
