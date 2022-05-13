@@ -8,16 +8,22 @@ using UnityEngine;
 /// </summary>
 public class MapGeneration : MonoBehaviour
 {
+
     private class Section
     {
+        public enum Type
+        {
+            Hallway = 0, Room = 1
+        }
+
         private int id;
         private int width;
         private int length;
         private int xIndexPosition;
         private int zIndexPosition;
-        private List<System.Tuple<int, Door>> doors;
-        private bool beenVisited = false;
+        private List<Door> doors;
         private List<GameObject> sectionComponents;
+        private Type sectionType;
 
         /// <summary>
         /// Constructor for the Section class.
@@ -27,14 +33,15 @@ public class MapGeneration : MonoBehaviour
         /// <param name="z">The starting Array index position for this Section (length)</param>
         /// <param name="width">The physical width of this section (meters)</param>
         /// <param name="length">The physical length of this section (meters)</param>
-        public Section(int id, int x, int z, int width, int length)
+        public Section(int id, int x, int z, int width, int length, Type _type)
         {
             this.xIndexPosition = x;
             this.zIndexPosition = z;
             this.width = width;
             this.length = length;
             sectionComponents = new List<GameObject>();
-            doors = new List<System.Tuple<int, Door>>();
+            doors = new List<Door>();
+            sectionType = _type;
         }
 
         public int GetWidth()
@@ -57,9 +64,19 @@ public class MapGeneration : MonoBehaviour
             return zIndexPosition;
         }
 
+        public List<Door> GetSectionDoors()
+        {
+            return doors;
+        }
+
         public void AddSectionComponent(GameObject _component)
         {
             sectionComponents.Add(_component);
+        }
+
+        public void AddDoor(Door _door)
+        {
+            doors.Add(_door);
         }
     }
 
@@ -69,8 +86,8 @@ public class MapGeneration : MonoBehaviour
     private class Door
     {
         GameObject doorGameObject;
-        int xPos;
-        int zPos;
+        public int xPos;
+        public int zPos;
 
         public Door(GameObject _door, int _xPosition, int _zPosition)
         {
@@ -146,7 +163,6 @@ public class MapGeneration : MonoBehaviour
     private void CreateLevel()
     {
         CreateSections(0, this.levelWidth - 1, 0, this.levellength - 1);
-        //CreateSectionDoors();
         CreateCorridors();
     }
 
@@ -166,7 +182,12 @@ public class MapGeneration : MonoBehaviour
         if (currentWidth <= 10 && currentLength <= 10)
         {
             // Create section and exclude 1 array element on all sides for potential hallways
-            Section newSection = new Section(Random.Range(0, 1000), xMin + 1, zMin + 1, currentWidth - 2, currentLength - 2);
+            // If the it has a negative dimension because of this, discard the room
+            if(currentWidth - 2 <= 0 || currentLength - 2 <= 0)
+            {
+                return;
+            }
+            Section newSection = new Section(Random.Range(0, 1000), xMin + 1, zMin + 1, currentWidth - 2, currentLength - 2, Section.Type.Room);
             CreateRoom(newSection);
             listOfSections.Add(newSection);
             // Assign section to level array ( +/-1 to exclude the perimeter of the section)
@@ -202,6 +223,9 @@ public class MapGeneration : MonoBehaviour
     /// <param name="section"></param>
     private void CreateRoom(Section section)
     {
+        GameObject room = new GameObject();
+        room.name = "Room-" + listOfSections.Count;
+
         int xEndPosition = section.GetXIndexPosition() + section.GetWidth();
         int zEndPosition = section.GetZIndexPosition() + section.GetLength();
 
@@ -229,52 +253,36 @@ public class MapGeneration : MonoBehaviour
         }
         int numberOfRegularWalls = xWalls + zWalls;
         int numberOfPossibleDoors = Random.Range(1, numberOfRegularWalls);
-        List<System.Tuple<int, int>> doorLocations = new List<System.Tuple<int, int>>();
-        for(int i = 0; i < numberOfPossibleDoors; i++)
-        {
-            int x = Random.Range(xStartPosition + 1, xEndPosition - 1);
-            int z = Random.Range(zStartPosition + 1, zEndPosition - 1);
-            System.Tuple<int, int> doorLocation = new System.Tuple<int, int>(x, z);
-            // If the position is already a door, do not add it again
-            if (!CheckIsDoorLocation(doorLocations, x, z))
-            {
-                doorLocations.Add(doorLocation);
-                Debug.LogError("-----Here is the door location: " + doorLocation);
-            }
-        }
 
-        Debug.LogError("This section has this many doors Confirm: " + doorLocations.Count);
-
+        List<System.Tuple<int, int>> doorLocations = GenerateDoorLocations(numberOfPossibleDoors, xStartPosition, xEndPosition, zStartPosition, zEndPosition);
+        
         // Create all the walls, floor and ceiling
         for (int x = section.GetXIndexPosition(); x <= xEndPosition; x++)
         {
             for(int z = section.GetZIndexPosition(); z <= zEndPosition; z++)
             {
-                Debug.LogError("Checking this position: " + x + ", " + z);
                 // Check if the subsection is a corner
                 int cornerRotation = CornerRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                 if (cornerRotation >= 0)
                 {
-                    Debug.LogError("**This is a corner.");
                     GameObject temp = Instantiate(this.roomCorner, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                     temp.transform.Rotate(0, cornerRotation * 90, 0);
                     section.AddSectionComponent(temp);
+                    temp.transform.SetParent(room.transform);
                 }
                 else
                 {
-                    Debug.LogError("**This is NOT a corner.");
                     // Check if the subsection is a wall
                     int wallRotation = WallRotationCheck(x, z, xEndPosition, zEndPosition, xStartPosition, zStartPosition);
                     if (wallRotation >= 0)
                     {
-                        Debug.LogError("**This is a wall.");
                         GameObject prefabToUse;
                         // Determine if this wall is a door
-                        Debug.LogError("****Checking if wall is a door: " + x + ", " + z);
+                        bool isDoor = false;
                         if (CheckIsDoorLocation(doorLocations, x, z))
                         {
                             prefabToUse = this.roomDoor;
-                            Debug.LogError("This is a door");
+                            isDoor = true;
                         }
                         else
                         {
@@ -283,20 +291,88 @@ public class MapGeneration : MonoBehaviour
                         GameObject temp = Instantiate(prefabToUse, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                         temp.transform.Rotate(0, wallRotation * 90, 0);
                         section.AddSectionComponent(temp);
+                        temp.transform.SetParent(room.transform);
+                        if (isDoor)
+                        {
+                            Door door = new Door(temp, x, z);
+                            section.AddDoor(door);
+                        }
                     }
                     // Assume Middle piece
                     else
                     {
-                        Debug.LogError("**This is a center.");
                         GameObject temp = Instantiate(this.roomCenter, new Vector3(x * 4.0f, 0, z * 4.0f), this.gameObject.transform.rotation, this.transform);
                         section.AddSectionComponent(temp);
+                        temp.transform.SetParent(room.transform);
 
                     }
                 }
             }
         }
+    }
 
 
+    /// <summary>
+    /// GenerateDoorLocations will generate locations for doors to be placed in the given room corrdinants.
+    /// </summary>
+    /// <param name="_numPossibleDoors"></param>
+    /// <param name="_xStartPosition"></param>
+    /// <param name="_xEndPosition"></param>
+    /// <param name="_zStartPosition"></param>
+    /// <param name="_zEndPosition"></param>
+    private List<System.Tuple<int, int>> GenerateDoorLocations(int _numberOfPossibleDoors, int _xStartPosition, int _xEndPosition, int _zStartPosition, int _zEndPosition)
+    {
+        List<System.Tuple<int, int>> doorLocations = new List<System.Tuple<int, int>>();
+
+        for (int i = 0; i < _numberOfPossibleDoors; i++)
+        {
+            // Choose a random side for this potential door
+            int side = Random.Range(0, 3);
+            int x = 0;
+            int z = 0;
+            switch (side)
+            {
+                case 0:
+                    {
+                        x = Random.Range(_xStartPosition + 1, _xEndPosition - 1);
+                        z = _zStartPosition;
+                        break;
+                    }
+                case 1:
+                    {
+                        x = Random.Range(_xStartPosition + 1, _xEndPosition - 1);
+                        z = _zEndPosition;
+                        break;
+                    }
+                case 2:
+                    {
+                        x = _xStartPosition;
+                        z = Random.Range(_zStartPosition + 1, _zEndPosition - 1);
+                        break;
+                    }
+                default:
+                    {
+                        x = _xEndPosition;
+                        z = Random.Range(_zStartPosition + 1, _zEndPosition - 1);
+                        break;
+                    }
+            }
+            System.Tuple<int, int> doorLocation = new System.Tuple<int, int>(x, z);
+            // If the position is already a door, do not add it again. Also, doors cannot be placed on corners
+            if (!CheckIsDoorLocation(doorLocations, x, z) && (CornerRotationCheck(x, z, _xEndPosition, _zEndPosition, _xStartPosition, _zStartPosition) < 0))
+            {
+                doorLocations.Add(doorLocation);
+            }
+        }
+
+        // Forceably add a door if none exists
+        if(doorLocations.Count == 0)
+        {
+            System.Tuple<int, int> doorLocation = new System.Tuple<int, int>(_xStartPosition + 1, _zStartPosition);
+            doorLocations.Add(doorLocation);
+        }
+
+        return doorLocations;
     }
 
 
@@ -396,19 +472,251 @@ public class MapGeneration : MonoBehaviour
 
 
     /// <summary>
-    /// CreateCorridors will create hallways/corridors between all the room sections
+    /// CreateCorridors
     /// </summary>
     private void CreateCorridors()
     {
-        for(int x = 0; x < this.levelWidth; x++)
+        foreach(Section section in listOfSections)
         {
-            for(int z = 0; z < this.levellength; z++)
+            foreach(Door door in section.GetSectionDoors())
             {
-                if(this.levelArray[x,z] == null)
-                {
-                    Instantiate(this.corridorSmall, new Vector3(x * 4.0f, -2, z * 4.0f), this.transform.rotation, this.transform);
-                }
+                GenerateHallway(0, door.xPos, door.zPos);
             }
+        }
+    }
+
+
+    /// <summary>
+    /// CreateCorridors2 will recursively create corridors until no more can be created.
+    /// </summary>
+    /// <param name="_direction">0 = North, 1 = East, 2 = South, 3 = West</param>
+    /// <param name="_currentX"></param>
+    /// <param name="_currentZ"></param>
+    private void GenerateHallway(int _direction, int _currentX, int _currentZ)
+    {
+        if(IsHallwayComplete(_currentX, _currentZ))
+        {
+            Debug.LogError("***Hallway Complete***");
+            return;
+        }
+        else
+        {
+            Debug.LogError("***Creating New Hallway***");
+            if (CanMoveForward(_direction, _currentX, _currentZ))
+            {
+                System.Tuple<int,int> newPosition = CreateHallway(_direction, _currentX, _currentZ);
+                GenerateHallway(_direction, newPosition.Item1, newPosition.Item2);
+            }
+            else
+            {
+                GenerateHallway(Random.Range(0, 4), _currentX, _currentZ);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// IsHallwayComplete will determine if there is any more hallway that can be completed.
+    /// </summary>
+    /// <param name="_currentX"></param>
+    /// <param name="_currentZ"></param>
+    /// <returns></returns>
+    private bool IsHallwayComplete(int _currentX, int _currentZ)
+    {
+        if(CanMoveInXDirection(_currentX, _currentZ) || CanMoveInZDirection(_currentX, _currentZ))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+
+    /// <summary>
+    /// CanMoveInXDirection 
+    /// </summary>
+    /// <param name="_currentX"></param>
+    /// <param name="_currentZ"></param>
+    /// <returns></returns>
+    private bool CanMoveInXDirection(int _currentX, int _currentZ)
+    {
+        bool canMoveLeft = true;
+        bool canMoveRight = true;
+        if (_currentX + 1 >= levelWidth || levelArray[_currentX + 1, _currentZ] != null)
+        {
+            canMoveRight = false;
+        }
+
+        if(_currentX - 1 < 0 || levelArray[_currentX - 1, _currentZ] != null)
+        {
+            canMoveLeft = false;
+        }
+
+        return (canMoveLeft || canMoveRight);
+    }
+
+
+    /// <summary>
+    /// CanMoveInZDirection 
+    /// </summary>
+    /// <param name="_currentX"></param>
+    /// <param name="_currentZ"></param>
+    /// <returns></returns>
+    private bool CanMoveInZDirection(int _currentX, int _currentZ)
+    {
+        bool canMoveUp = true;
+        bool canMoveDown = true;
+        if (_currentZ + 1 >= levellength || levelArray[_currentX, _currentZ + 1] != null) 
+        {
+            canMoveUp = false;
+        }
+
+        if(_currentZ - 1 < 0 || levelArray[_currentX, _currentZ - 1] != null)
+        {
+            canMoveDown = false;
+        }
+
+        return (canMoveUp || canMoveDown);
+    }
+
+
+    /// <summary>
+    /// CanCreateNextHallway will determine if another hallway can be created based on the current position and direction.
+    /// </summary>
+    /// <param name="_direction"></param>
+    /// <param name="_currentX"></param>
+    /// <param name="_currentZ"></param>
+    /// <returns></returns>
+    private bool CanMoveForward(int _direction, int _currentX, int _currentZ)
+    {
+        switch (_direction)
+        {
+            case 0:
+                {
+                    if (_currentZ + 1 < levellength && levelArray[_currentX, _currentZ + 1] == null)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            case 1:
+                {
+                    if (_currentX + 1 < levelWidth && levelArray[_currentX + 1, _currentZ] == null)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            case 2:
+                {
+                    if (_currentZ - 1 >= 0 && levelArray[_currentX, _currentZ - 1] == null)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            default:
+                {
+                    if (_currentX - 1 >= 0 && levelArray[_currentX - 1, _currentZ] == null)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+        }
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="_direction"></param>
+    /// <param name="_currentX"></param>
+    /// <param name="_currentZ"></param>
+    /// <returns></returns>
+    private System.Tuple<int,int> CreateHallway(int _direction, int _currentX, int _currentZ)
+    {
+        GameObject hallway = null;
+        switch (_direction)
+        {
+            case 0:
+                {
+                    // Continue with a regular corridor if it can continue to go straight after this piece
+                    if(_currentZ + 2 < levellength && levelArray[_currentX, _currentZ + 2] == null)
+                    {
+                        hallway = Instantiate(this.corridorSmall, new Vector3(_currentX * 4.0f, -2, _currentZ * 4.0f), this.transform.rotation, this.transform);
+                    }
+                    // Otherwise create a junction
+                    else
+                    {
+                        hallway = Instantiate(this.corridorCorrner, new Vector3(_currentX * 4.0f, -2, _currentZ * 4.0f), this.transform.rotation, this.transform);
+                    }
+                    levelArray[_currentX, _currentZ] = new Section(0, _currentX, _currentZ, 1, 1, Section.Type.Hallway);
+                    hallway.transform.Rotate(0, 90 * _direction, 0);
+                    return new System.Tuple<int, int>(_currentX, _currentZ + 1);
+                }
+            case 1:
+                {
+                    // Continue with a regular corridor if it can continue to go straight after this piece
+                    if (_currentX + 2 < levelWidth && levelArray[_currentX + 2, _currentZ] == null)
+                    {
+                        hallway = Instantiate(this.corridorSmall, new Vector3(_currentX * 4.0f, -2, _currentZ * 4.0f), this.transform.rotation, this.transform);
+                    }
+                    // Otherwise create a junction
+                    else
+                    {
+                        hallway = Instantiate(this.corridorCorrner, new Vector3(_currentX * 4.0f, -2, _currentZ * 4.0f), this.transform.rotation, this.transform);
+                    }
+                    levelArray[_currentX, _currentZ] = new Section(0, _currentX, _currentZ, 1, 1, Section.Type.Hallway);
+                    hallway.transform.Rotate(0, 90 * _direction, 0);
+                    return new System.Tuple<int, int>(_currentX + 1, _currentZ);
+                }
+            case 2:
+                {
+                    // Continue with a regular corridor if it can continue to go straight after this piece
+                    if (_currentZ - 2 >= 0 && levelArray[_currentX, _currentZ - 2] == null)
+                    {
+                        hallway = Instantiate(this.corridorSmall, new Vector3(_currentX * 4.0f, -2, _currentZ * 4.0f), this.transform.rotation, this.transform);
+                    }
+                    // Otherwise create a junction
+                    else
+                    {
+                        hallway = Instantiate(this.corridorCorrner, new Vector3(_currentX * 4.0f, -2, _currentZ * 4.0f), this.transform.rotation, this.transform);
+                    }
+                    levelArray[_currentX, _currentZ] = new Section(0, _currentX, _currentZ, 1, 1, Section.Type.Hallway);
+                    hallway.transform.Rotate(0, 90 * _direction, 0);
+                    return new System.Tuple<int, int>(_currentX, _currentZ - 1);
+                }
+            default:
+                {
+                    // Continue with a regular corridor if it can continue to go straight after this piece
+                    if (_currentX - 2 >=0 && levelArray[_currentX - 2, _currentZ] == null)
+                    {
+                        hallway = Instantiate(this.corridorSmall, new Vector3(_currentX * 4.0f, -2, _currentZ * 4.0f), this.transform.rotation, this.transform);
+                    }
+                    // Otherwise create a junction
+                    else
+                    {
+                        hallway = Instantiate(this.corridorCorrner, new Vector3(_currentX * 4.0f, -2, _currentZ * 4.0f), this.transform.rotation, this.transform);
+                    }
+                    levelArray[_currentX, _currentZ] = new Section(0, _currentX, _currentZ, 1, 1, Section.Type.Hallway);
+                    hallway.transform.Rotate(0, 90 * _direction, 0);
+                    return new System.Tuple<int, int>(_currentX - 1, _currentZ);
+                }
         }
     }
 
